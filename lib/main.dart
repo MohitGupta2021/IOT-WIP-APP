@@ -86,307 +86,6 @@
 // // //   client.disconnect();
 // // // }
 
-// import 'dart:async';
-// import 'dart:io';
-// import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart'; // Import the flutter/services.dart package
-// import 'package:mqtt_client/mqtt_server_client.dart';
-// import 'package:mqtt_client/mqtt_client.dart';
-
-// void main() {
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'MQTT Flutter Demo',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//       ),
-//       home: MyHomePage(),
-//     );
-//   }
-// }
-
-// class MyHomePage extends StatefulWidget {
-//   MyHomePage({Key? key}) : super(key: key);
-
-//   @override
-//   _MyHomePageState createState() => _MyHomePageState();
-// }
-
-// class _MyHomePageState extends State<MyHomePage> {
-//   final TextEditingController messageController = TextEditingController();
-//   late MqttServerClient client;
-//   String receivedMessage = '';
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     setupMqtt();
-//   }
-
-//   Future<void> setupMqtt() async {
-
-//     const url = 'a1hjtipwb9wtw6-ats.iot.ap-south-1.amazonaws.com';
-//     const port = 8883;
-//     const clientId = '12';
-
-//     client = MqttServerClient.withPort(url, clientId, port)
-//       ..port = port
-//       ..secure = true
-//       ..logging(on: false);
-
-//     // Load certificate and private key from assets using rootBundle
-//     ByteData rootCAData = await rootBundle.load('assets/cert/RootCA.pem');
-//     ByteData deviceCertData =await rootBundle.load('assets/cert/DeviceCertificate.crt');
-//     ByteData privateKeyData = await rootBundle.load('assets/cert/Private.key');
-
-//     SecurityContext context = SecurityContext.defaultContext
-//       ..setClientAuthoritiesBytes(Uint8List.view(rootCAData.buffer))
-//       ..useCertificateChainBytes(Uint8List.view(deviceCertData.buffer))
-//       ..usePrivateKeyBytes(Uint8List.view(privateKeyData.buffer));
-
-//     client.securityContext = context;
-
-//     final connMess = MqttConnectMessage()
-//         .withClientIdentifier(clientId)
-//         .startClean();
-//     client.connectionMessage = connMess;
-
-//     try {
-//       print('MQTT client connecting to AWS IoT using certificates....');
-//       await client.connect();
-//       print('MQTT client connected to AWS IoT');
-//     } on Exception catch (e) {
-//       print('MQTT client exception - $e');
-//       client.disconnect();
-//       // Handle connection error
-//     }
-
-//     client.updates!.listen((List<MqttReceivedMessage<MqttMessage>> c) {
-//       final recMess = c[0].payload as MqttPublishMessage;
-//       final pt = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-//       setState(() {
-//         receivedMessage = pt;
-//       });
-//     });
-//   }
-
-//   Future<void> publishMessage() async {
-//     final topic = '/test/topic';
-//     final builder = MqttClientPayloadBuilder();
-//     builder.addString(messageController.text);
-
-//     // Publish the message
-//     client.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
-//   }
-
-//   @override
-//   void dispose() {
-//     messageController.dispose();
-//     client.disconnect();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('MQTT Flutter Demo'),
-//       ),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: <Widget>[
-//             Text(
-//               'Received Message:',
-//               style: TextStyle(fontSize: 18),
-//             ),
-//             Text(
-//               receivedMessage,
-//               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-//             ),
-//             SizedBox(height: 20),
-//             TextField(
-//               controller: messageController,
-//               decoration: InputDecoration(
-//                 labelText: 'Message to Publish',
-//                 border: OutlineInputBorder(),
-//               ),
-//             ),
-//             SizedBox(height: 20),
-//             ElevatedButton(
-//               onPressed: () {
-//                 publishMessage();
-//                 messageController.clear();
-//               },
-//               child: Text('Publish Message'),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// woring fine till aws pub and sub
-// import 'dart:async';
-// import 'dart:io';
-// import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart';
-// import 'package:mqtt_client/mqtt_server_client.dart';
-// import 'package:mqtt_client/mqtt_client.dart';
-
-// void main() {
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Autoot Demo',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//       ),
-//       home: MyHomePage(),
-//     );
-//   }
-// }
-
-// class MyHomePage extends StatefulWidget {
-//   MyHomePage({Key? key}) : super(key: key);
-
-//   @override
-//   _MyHomePageState createState() => _MyHomePageState();
-// }
-
-// class _MyHomePageState extends State<MyHomePage> {
-//   final TextEditingController messageController = TextEditingController();
-//   late MqttServerClient client;
-//   String receivedMessage = '';
-//   String subscribeData = '';
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     setupMqtt();
-//   }
-
-//   Future<void> setupMqtt() async {
-//     const url = 'a1hjtipwb9wtw6-ats.iot.ap-south-1.amazonaws.com';
-//     const port = 8883;
-//     const clientId = '12';
-
-//     client = MqttServerClient.withPort(url, clientId, port)
-//       ..port = port
-//       ..secure = true
-//       ..logging(on: false);
-
-//     ByteData rootCAData = await rootBundle.load('assets/cert/RootCA.pem');
-//     ByteData deviceCertData = await rootBundle.load('assets/cert/DeviceCertificate.crt');
-//     ByteData privateKeyData = await rootBundle.load('assets/cert/Private.key');
-
-//     SecurityContext context = SecurityContext.defaultContext
-//       ..setClientAuthoritiesBytes(Uint8List.view(rootCAData.buffer))
-//       ..useCertificateChainBytes(Uint8List.view(deviceCertData.buffer))
-//       ..usePrivateKeyBytes(Uint8List.view(privateKeyData.buffer));
-
-//     client.securityContext = context;
-
-//     final connMess = MqttConnectMessage()
-//         .withClientIdentifier(clientId)
-//         .startClean();
-//     client.connectionMessage = connMess;
-
-//     try {
-//       print('MQTT client connecting to AWS IoT using certificates....');
-//       await client.connect();
-//       print('MQTT client connected to AWS IoT');
-
-//       const subscribeTopic = 'data/sub';
-//       client.subscribe(subscribeTopic, MqttQos.atLeastOnce);
-
-//       client.updates!.listen((List<MqttReceivedMessage<MqttMessage>> c) {
-//         final recMess = c[0].payload as MqttPublishMessage;
-//         final pt = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-//         setState(() {
-//           subscribeData = pt;
-//         });
-//       });
-
-//       client.onSubscribed = (String topic) {
-//         print('Subscribed to topic: $topic');
-//       };
-
-//       client.onSubscribeFail = (String topic) {
-//         print('Failed to subscribe to topic: $topic');
-//       };
-//     } on Exception catch (e) {
-//       print('MQTT client exception - $e');
-//       client.disconnect();
-//     }
-//   }
-
-//   Future<void> publishMessage() async {
-//     final topic = '/test/topic';
-//     final builder = MqttClientPayloadBuilder();
-//     builder.addString(messageController.text);
-
-//     client.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
-//   }
-
-//   @override
-//   void dispose() {
-//     messageController.dispose();
-//     client.disconnect();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('MQTT Flutter Demo'),
-//       ),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: <Widget>[
-
-//             Text(
-//               'Subscribe Data:',
-//               style: TextStyle(fontSize: 18),
-//             ),
-//             Text(
-//               subscribeData,
-//               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-//             ),
-//             SizedBox(height: 20),
-//             TextField(
-//               controller: messageController,
-//               decoration: InputDecoration(
-//                 labelText: 'Message to Publish',
-//                 border: OutlineInputBorder(),
-//               ),
-//             ),
-//             SizedBox(height: 20),
-//             ElevatedButton(
-//               onPressed: () {
-//                 publishMessage();
-//                 messageController.clear();
-//               },
-//               child: Text('Publish Message'),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 
 import 'dart:async';
 import 'dart:convert'; // Add this import for JSON parsing
@@ -405,7 +104,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Autoot Demo',
+      title: 'Autoswitch Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -583,3 +282,70 @@ class _MyHomePageState extends State<MyHomePage> {
 
   }
 }
+
+//main.dart
+// import 'package:flutter/material.dart';
+// import 'package:flutter/services.dart';
+// import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+
+// class QRScreen extends StatefulWidget {
+//   const QRScreen({Key? key}) : super(key: key);
+
+//   @override
+//   State<QRScreen> createState() => _QRScreenState();
+// }
+
+// class _QRScreenState extends State<QRScreen> {
+//   String? _scanCode;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text("QR Code"),
+//         centerTitle: true,
+//       ),
+//       body: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           _scanCode == null
+//               ? SizedBox()
+//               : Text(
+//                   "Scanned Code -  $_scanCode",
+//                   style: TextStyle(
+//                     color: Colors.blue,
+//                     fontSize: 18,
+//                   ),
+//                 ),
+//           SizedBox(height: 20,),
+//           TextButton(
+//             onPressed: () {
+//               scanQR();
+//             },
+//             child: Text("Scan Code"),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Future<void> scanQR() async {
+//     String barcodeScanRes;
+//     try {
+//       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+//         '#ff6666',
+//         'Cancel',
+//         true,
+//         ScanMode.QR,
+//       );
+//     } on PlatformException {
+//       barcodeScanRes = 'Failed to get platform version.';
+//     }
+//     if (!mounted) return;
+
+//     setState(() {
+//       _scanCode = barcodeScanRes;
+//     });
+//   }
+// }
+
